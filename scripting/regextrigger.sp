@@ -15,8 +15,12 @@
 #include <sdktools>
 #include <regex>
 #include <color_literals>
-#undef REQUIRE_PLUGIN
+
+#undef REQUIRE_EXTENSIONS
 #include <tf2>
+#define REQUIRE_EXTENSIONS
+
+#undef REQUIRE_PLUGIN
 #include <sourceirc>
 #include <discord>
 #define REQUIRE_PLUGIN
