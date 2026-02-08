@@ -18,10 +18,10 @@
 
 #undef REQUIRE_EXTENSIONS
 #include <tf2>
-#include <discord>
 #define REQUIRE_EXTENSIONS
 
-enum {
+enum
+{
 	NAME = 0,
 	CHAT,
 	COMMAND,
@@ -34,20 +34,15 @@ ConVar g_cvarStatus,
 	   g_cvarCheckChat,
 	   g_cvarCheckCommands,
 	   g_cvarCheckNames,
-	   g_cvarUnnamedPrefix,
-	   g_cvarDiscordWebhook,
-	   g_cvarServerName;
+	   g_cvarUnnamedPrefix;
 Regex g_rRegexCaptures;
 StringMap g_smClientLimits[TRIGGER_COUNT][MAXPLAYERS+1];
 bool g_bLate,
-	 g_bChanged[MAXPLAYERS+1],
-	 g_bDiscord;
+	 g_bChanged[MAXPLAYERS+1];
 char g_sConfigPath[PLATFORM_MAX_PATH],
-	 g_sDiscordWebhook[256],
 	 g_sOldName[MAXPLAYERS+1][MAX_NAME_LENGTH],
 	 g_sUnfilteredName[MAXPLAYERS+1][MAX_NAME_LENGTH],
-	 g_sPrefix[MAX_NAME_LENGTH],
-	 g_sServerName[32];
+	 g_sPrefix[MAX_NAME_LENGTH];
 EngineVersion g_EngineVersion;
 
 // https://github.com/ValveSoftware/source-sdk-2013/blob/master/src/game/server/tf/bot/tf_bot.cpp#L143
@@ -175,27 +170,19 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 public void OnPluginStart()
 {
 	CreateConVar("sm_regextriggers_version", PLUGIN_VERSION, PLUGIN_DESCRIPTION, FCVAR_NOTIFY|FCVAR_DONTRECORD|FCVAR_SPONLY).SetString(PLUGIN_VERSION);
-	g_cvarStatus = CreateConVar("sm_regex_allow", "1", "Status of the plugin.\n(1 = on, 0 = off)", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_cvarConfigPath = CreateConVar("sm_regex_config_path", "configs/regextriggers/", "Location to store the regex filters at.", FCVAR_NONE);
-	g_cvarCheckChat = CreateConVar("sm_regex_check_chat", "1", "Filter out and check chat messages.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_cvarCheckCommands = CreateConVar("sm_regex_check_commands", "1", "Filter out and check commands.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_cvarCheckNames = CreateConVar("sm_regex_check_names", "1", "Filter out and check names.", FCVAR_NONE, true, 0.0, true, 1.0);
-	g_cvarUnnamedPrefix = CreateConVar("sm_regex_prefix", "", "Prefix for random name when player has become unnamed", FCVAR_NONE);
-	g_cvarServerName = CreateConVar("sm_regex_server_name", "No name set!", "Name to display in discord when relaying", FCVAR_NONE);
-
-	// Discord
-	g_cvarDiscordWebhook = CreateConVar("sm_regex_discord_webhook", "", "Discord webhook URL for flagged words relay", FCVAR_NONE);
+	g_cvarStatus = CreateConVar("sm_regex_allow", "1", "Status of the plugin.\n(1 = on, 0 = off)", _, true, 0.0, true, 1.0);
+	g_cvarConfigPath = CreateConVar("sm_regex_config_path", "configs/regextriggers/", "Location to store the regex filters at.");
+	g_cvarCheckChat = CreateConVar("sm_regex_check_chat", "1", "Filter out and check chat messages.", _, true, 0.0, true, 1.0);
+	g_cvarCheckCommands = CreateConVar("sm_regex_check_commands", "1", "Filter out and check commands.", _, true, 0.0, true, 1.0);
+	g_cvarCheckNames = CreateConVar("sm_regex_check_names", "1", "Filter out and check names.", _, true, 0.0, true, 1.0);
+	g_cvarUnnamedPrefix = CreateConVar("sm_regex_prefix", "", "Prefix for random name when player has become unnamed");
 
 	g_cvarUnnamedPrefix.AddChangeHook(cvarChanged_Prefix);
-	g_cvarDiscordWebhook.AddChangeHook(cvarChanged_DiscordWebhook);
-	g_cvarServerName.AddChangeHook(cvarChanged_ServerName);
 
 	AutoExecConfig();
 
 	g_cvarUnnamedPrefix.GetString(g_sPrefix, sizeof(g_sPrefix));
-	g_cvarDiscordWebhook.GetString(g_sDiscordWebhook, sizeof(g_sDiscordWebhook));
 	g_cvarConfigPath.GetString(g_sConfigPath, sizeof(g_sConfigPath));
-	g_cvarServerName.GetString(g_sServerName, sizeof g_sServerName);
 
 	BuildPath(Path_SM, g_sConfigPath, sizeof(g_sConfigPath), g_sConfigPath);
 	Format(g_sConfigPath, sizeof(g_sConfigPath), "%sregextriggers.cfg", g_sConfigPath);
@@ -263,19 +250,6 @@ public void OnPluginStart()
 	}
 }
 
-public void OnAllPluginsLoaded()
-{
-	g_bDiscord = GetExtensionFileStatus("discord.ext") > 0;
-}
-
-public void OnLibraryRemoved(const char[] name)
-{
-	if (StrEqual(name, "discord"))
-	{
-		g_bDiscord = false;
-	}
-}
-
 public void OnClientPostAdminCheck(int client)
 {
 	if (!g_cvarStatus.BoolValue)
@@ -340,16 +314,6 @@ void cvarChanged_Prefix(ConVar convar, const char[] oldValue, const char[] newVa
 	strcopy(g_sPrefix, sizeof(g_sPrefix), newValue);
 }
 
-void cvarChanged_DiscordWebhook(ConVar convar, const char[] oldValue, const char[] newValue)
-{
-	strcopy(g_sDiscordWebhook, sizeof(g_sDiscordWebhook), newValue);
-}
-
-void cvarChanged_ServerName(ConVar convar, const char[] oldValue, const char[] newValue)
-{
-	strcopy(g_sServerName, sizeof(g_sServerName), newValue);
-}
-
 // =================== Hooks
 
 public Action eventPlayerConnect(Event event, const char[] name, bool dontBroadcast)
@@ -396,7 +360,7 @@ public Action eventOnChangeName(Event event, const char[] name, bool dontBroadca
 		return Plugin_Continue;
 	}
 
-	// If name is unchanged, store it so we can use it for discord relay.
+	// If name is unchanged, store it for later comparisons.
 	if (!g_bChanged[client])
 	{
 		strcopy(g_sUnfilteredName[client], sizeof(g_sUnfilteredName[]), newName);
@@ -520,7 +484,7 @@ void LoadRegexConfig(const char[] config)
 					replacements.PushString(buffer);
 				}
 			}
-			else if (StrEqual(key, "block") || StrEqual(key, "limit") || StrEqual(key, "relay"))
+			else if (StrEqual(key, "block") || StrEqual(key, "limit"))
 			{
 				UpdateRuleValue(section, key, kv.GetNum(NULL_STRING));
 			}
@@ -698,7 +662,6 @@ int FindRegexFlags(const char[] flags)
 }
 
 // =================== Internal Functions
-
 void ClearData(int client)
 {
 	g_bChanged[client] = false;
@@ -881,7 +844,6 @@ Action CheckClientName(int client, char[] newName, int size, bool connecting = f
 	int immunityFlag;
 	char buffer[256];
 	int limit;
-	bool relay;
 	ArrayList replaceList;
 	bool replaced;
 
@@ -930,8 +892,6 @@ Action CheckClientName(int client, char[] newName, int size, bool connecting = f
 					return Plugin_Continue;
 				}
 			}
-
-			rules.GetValue("relay", relay);
 
 			if (rules.GetValue("replace", replaceList))
 			{
@@ -984,15 +944,6 @@ Action CheckClientName(int client, char[] newName, int size, bool connecting = f
 		ret = Plugin_Stop;
 	}
 
-	if (relay && g_bDiscord && g_sDiscordWebhook[0])
-	{
-		char output[192];
-		FormatEx(output, sizeof(output), "**%s** `%s`  -->  `%s`", g_sServerName, g_sUnfilteredName[client], newName);
-
-		DiscordWebhook webhook = new DiscordWebhook(null, g_sDiscordWebhook);
-		webhook.Execute(output);
-	}
-
 	AnnounceNameChange(client, newName, connecting);
 
 	return ret;
@@ -1023,7 +974,6 @@ Action CheckClientMessage(int client, const char[] command, const char[] text)
 
 	char buffer[256];
 	int limit;
-	int relay;
 	bool block;
 	ArrayList replaceList;
 	bool replaced;
@@ -1075,30 +1025,9 @@ Action CheckClientMessage(int client, const char[] command, const char[] text)
 				}
 			}
 
-			rules.GetValue("relay", relay);
-
 			if (rules.GetValue("block", block) && block)
 			{
-				if (relay && g_bDiscord && g_sDiscordWebhook[0])
-				{
-					char clientName[MAX_NAME_LENGTH];
-					GetClientName(client, clientName, sizeof(clientName));
-
-					char output[256];
-					if (changed)
-					{
-						Format(output, sizeof(output), "**%s** %s: `%s` --> `%s` **Blocked**", g_sServerName, clientName, text, message);
-					}
-					else
-					{
-						Format(output, sizeof(output), "**%s** %s: `%s`", g_sServerName, clientName, message);
-					}
-
-					DiscordWebhook webhook = new DiscordWebhook(null, g_sDiscordWebhook);
-					webhook.Execute(output);
-				}
-
-				return Plugin_Handled;
+				return Plugin_Stop;
 			}
 
 			if (rules.GetValue("replace", replaceList))
@@ -1111,7 +1040,7 @@ Action CheckClientMessage(int client, const char[] command, const char[] text)
 
 			if (message[0] == '\0')
 			{
-				return Plugin_Handled;
+				return Plugin_Stop;
 			}
 
 			if (replaced)
@@ -1127,32 +1056,8 @@ Action CheckClientMessage(int client, const char[] command, const char[] text)
 
 	if (changed)
 	{
-		if (relay && g_bDiscord && g_sDiscordWebhook[0])
-		{
-			char clientName[MAX_NAME_LENGTH];
-			Format(clientName, sizeof(clientName), "%N", client);
-
-			char output[256];
-			Format(output, sizeof(output), "**%s** %s: `%s`  -->  `%s`", g_sServerName, clientName, text, message);
-
-			DiscordWebhook webhook = new DiscordWebhook(null, g_sDiscordWebhook);
-			webhook.Execute(output);
-		}
-
 		FakeClientCommand(client, "%s %s", command, message);
-		return Plugin_Handled;
-	}
-
-	if (relay && g_bDiscord && g_sDiscordWebhook[0])
-	{
-		char clientName[MAX_NAME_LENGTH];
-		Format(clientName, sizeof(clientName), "%N", client);
-
-		char output[256];
-		Format(output, sizeof(output), "**%s** %s: `%s`", g_sServerName, clientName, message);
-
-		DiscordWebhook webhook = new DiscordWebhook(null, g_sDiscordWebhook);
-		webhook.Execute(output);
+		return Plugin_Stop;
 	}
 
 	return Plugin_Continue;
@@ -1182,7 +1087,6 @@ Action CheckClientCommand(int client, char[] cmd)
 	int matchCount;
 	char buffer[128];
 	int limit;
-	bool relay;
 	bool block;
 	ArrayList replaceList;
 	bool replaced;
@@ -1211,7 +1115,6 @@ Action CheckClientCommand(int client, char[] cmd)
 			matchCount = regex.MatchAll(command, errorcode);
 			if (matchCount <= 0 || errorcode != REGEX_ERROR_NONE)
 			{
-				begin++;
 				continue;
 			}
 
@@ -1235,29 +1138,8 @@ Action CheckClientCommand(int client, char[] cmd)
 				}
 			}
 
-			rules.GetValue("relay", relay);
-
 			if (rules.GetValue("block", block) && block)
 			{
-				if (relay && g_bDiscord && g_sDiscordWebhook[0])
-				{
-					char clientName[MAX_NAME_LENGTH];
-					GetClientName(client, clientName, sizeof(clientName));
-
-					char output[256];
-					if (changed)
-					{
-						Format(output, sizeof(output), "**%s** Command| %s: `%s` --> `%s` **Blocked**", g_sServerName, clientName, cmd, command);
-					}
-					else
-					{
-						Format(output, sizeof(output), "**%s** Command| %s: `%s`", g_sServerName, clientName, command);
-					}
-
-					DiscordWebhook webhook = new DiscordWebhook(null, g_sDiscordWebhook);
-					webhook.Execute(output);
-				}
-
 				return Plugin_Handled;
 			}
 
@@ -1284,36 +1166,6 @@ Action CheckClientCommand(int client, char[] cmd)
 		}
 
 		begin++;
-	}
-
-	if (changed)
-	{
-		if (relay && g_bDiscord && g_sDiscordWebhook[0])
-		{
-			char clientName[MAX_NAME_LENGTH];
-			Format(clientName, sizeof(clientName), "%N", client);
-
-			char output[256];
-			Format(output, sizeof(output), "**%s** Command| %s: `%s`  -->  `%s`", g_sServerName, clientName, cmd, command);
-
-			DiscordWebhook webhook = new DiscordWebhook(null, g_sDiscordWebhook);
-			webhook.Execute(output);
-		}
-
-		FakeClientCommand(client, "%s", command);
-		return Plugin_Handled;
-	}
-
-	if (relay && g_bDiscord && g_sDiscordWebhook[0])
-	{
-		char clientName[MAX_NAME_LENGTH];
-		Format(clientName, sizeof(clientName), "%N", client);
-
-		char output[256];
-		Format(output, sizeof(output), "**%s** Command| %s: `%s`", g_sServerName, clientName, command);
-
-		DiscordWebhook webhook = new DiscordWebhook(null, g_sDiscordWebhook);
-		webhook.Execute(output);
 	}
 
 	return Plugin_Continue;

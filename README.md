@@ -1,4 +1,4 @@
-# TF2-Regex-Trigger
+# ANY-Regex-Trigger
 **Serves as a regex trigger/filter for names, chat, and commands.**  
   
 I have included the regex config file which I use for my servers.  
@@ -10,14 +10,6 @@ https://regex101.com
 
 See this plugin for reference, since they are similar: https://forums.alliedmods.net/showthread.php?t=71867
 
-*This plugin has included features which integrate the use of **SourceIRC** and **Discord** when connecting multiple servers.* 
-https://github.com/Azelphur/SourceIRC (Original)  
-https://github.com/JoinedSenses/SourceIRC (Modified)  
-## Optional features:  
- * IRC: Method to relay 'connect' messages to a main IRC channel  
- * Discord: Method to relay filtered names and chat messages to a seperate channel for debugging/analysis.  
- * Notes: If using the discord api plugin, you're required to setup discord.cfg and to update /cfg/sourcemod/plugin.regextrigger.cfg  
-
 ## ConVars
 ```
 sm_regex_allow "1" Status of the plugin. (1 = on, 0 = off)  
@@ -26,10 +18,7 @@ sm_regex_check_chat "1" Filter out and check chat messages.
 sm_regex_check_commands "1" Filter out and check commands.  
 sm_regex_check_names "1" Filter out and check names.  
 sm_regex_prefix "" Prefix for random name when player has become unnamed  
-sm_regex_server_name "No name set!" Name to display in discord when relaying  
 sm_regex_irc_enabled "0" Enable IRC relay for SourceIRC. Sends messages to flagged channels  
-sm_regex_channelname "" Key name from discord.cfg for name relay  
-sm_regex_channelchat "" Key name from discord.cfg for chat relay  
 ```
 ## Installation  
  * Install regexfiltering.smx into your plugins folder.  
@@ -37,10 +26,6 @@ sm_regex_channelchat "" Key name from discord.cfg for chat relay
   or create your own at that location.
  * Once the plugin has been loaded, it can be configured at cfg/sourcemod/plugin.regexfilters.txt  
 
-**Discord formatting of filtered channel:**  
-![alt text](https://i.imgur.com/WhD5wUh.png)
-  
-  
 ## Config Keys
 **Warn:** Display a warning message to the player  
 `"warn" "msg"`  
@@ -71,8 +56,4 @@ Allows more flexibility with limiting. It might be ok to advertise once every fi
 **Replace:** Replaces matched text with a value.  
 `"replace" "with"`  
 Will replace the pattern's matches with "with", and check everything again.  
-Supports use of capture groups greater than 0 by using \\#, such as \\1 or \\2  
-
-**Relay:** Relays information to the related discord channel  
-`"relay" "1"`  
-If enabled and discord api is use, this will allow the plugin to relay messages to discord channels.  
+Supports use of capture groups greater than 0 by using \\#, such as \\1 or \\2
