@@ -70,7 +70,9 @@ jobs:
         id: artifact_name
         shell: bash
         run: |
-          echo "zip_name=regextrigger-${GITHUB_SHA::7}.zip" >> "$GITHUB_OUTPUT"
+          short_sha="${GITHUB_SHA::7}"
+          echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
+          echo "zip_name=regextrigger-${short_sha}.zip" >> "$GITHUB_OUTPUT"
 
       - name: Package artifact
         shell: bash
@@ -83,5 +85,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: regextrigger-${GITHUB_SHA::7}
+          name: regextrigger-${{ steps.artifact_name.outputs.short_sha }}
           path: ${{ steps.artifact_name.outputs.zip_name }}
