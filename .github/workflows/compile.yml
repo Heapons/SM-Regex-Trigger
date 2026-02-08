@@ -1,0 +1,87 @@
+name: Compile SP
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SourcePawn
+        uses: rumblefrog/setup-sp@v1.2.4
+        with:
+          version: "1.13.x"
+
+      - name: Download dependencies
+        shell: bash
+        run: |
+          mkdir -p scripting/include/discord scripting/include/multicolors
+          curl -o scripting/include/discord.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord.inc
+          curl -o scripting/include/discord/attachment.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/attachment.inc
+          curl -o scripting/include/discord/autocomplete.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/autocomplete.inc
+          curl -o scripting/include/discord/ban.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/ban.inc
+          curl -o scripting/include/discord/button_interaction.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/button_interaction.inc
+          curl -o scripting/include/discord/callbacks.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/callbacks.inc
+          curl -o scripting/include/discord/channel.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/channel.inc
+          curl -o scripting/include/discord/client.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/client.inc
+          curl -o scripting/include/discord/command.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/command.inc
+          curl -o scripting/include/discord/component.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/component.inc
+          curl -o scripting/include/discord/embed.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/embed.inc
+          curl -o scripting/include/discord/emoji.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/emoji.inc
+          curl -o scripting/include/discord/enums.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/enums.inc
+          curl -o scripting/include/discord/event.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/event.inc
+          curl -o scripting/include/discord/forum.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/forum.inc
+          curl -o scripting/include/discord/guild.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/guild.inc
+          curl -o scripting/include/discord/guild_member.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/guild_member.inc
+          curl -o scripting/include/discord/handle_array.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/handle_array.inc
+          curl -o scripting/include/discord/helpers.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/helpers.inc
+          curl -o scripting/include/discord/http.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/http.inc
+          curl -o scripting/include/discord/interaction.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/interaction.inc
+          curl -o scripting/include/discord/invite.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/invite.inc
+          curl -o scripting/include/discord/message.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/message.inc
+          curl -o scripting/include/discord/modal.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/modal.inc
+          curl -o scripting/include/discord/modal_interaction.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/modal_interaction.inc
+          curl -o scripting/include/discord/poll.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/poll.inc
+          curl -o scripting/include/discord/reaction.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/reaction.inc
+          curl -o scripting/include/discord/result.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/result.inc
+          curl -o scripting/include/discord/role.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/role.inc
+          curl -o scripting/include/discord/scheduled_event.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/scheduled_event.inc
+          curl -o scripting/include/discord/select_interaction.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/select_interaction.inc
+          curl -o scripting/include/discord/sticker.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/sticker.inc
+          curl -o scripting/include/discord/thread_member.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/thread_member.inc
+          curl -o scripting/include/discord/user.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/user.inc
+          curl -o scripting/include/discord/webhook.inc https://raw.githubusercontent.com/ProjectSky/sm-ext-discord/refs/heads/refactor-modular-architecture/scripting/include/discord/webhook.inc
+          curl -o scripting/include/multicolors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/refs/heads/master/addons/sourcemod/scripting/include/multicolors.inc
+          curl -o scripting/include/multicolors/colors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/refs/heads/master/addons/sourcemod/scripting/include/multicolors/colors.inc
+          curl -o scripting/include/multicolors/morecolors.inc https://raw.githubusercontent.com/Bara/Multi-Colors/refs/heads/master/addons/sourcemod/scripting/include/multicolors/morecolors.inc
+
+      - name: Compile
+        shell: bash
+        run: |
+          mkdir -p plugins
+          spcomp -i scripting/include scripting/regextrigger.sp -o plugins/regextrigger.smx
+
+      - name: Apply Commit SHA
+        id: artifact_name
+        shell: bash
+        run: |
+          echo "zip_name=regextrigger-${GITHUB_SHA::7}.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Package artifact
+        shell: bash
+        run: |
+          mkdir -p package/configs/regextriggers package/plugins
+          cp configs/regextriggers/regextriggers.cfg package/configs/regextriggers/regextriggers.cfg
+          cp plugins/regextrigger.smx package/plugins/regextrigger.smx
+          (cd package && zip -r "../${{ steps.artifact_name.outputs.zip_name }}" .)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: regextrigger-${GITHUB_SHA::7}
+          path: ${{ steps.artifact_name.outputs.zip_name }}
