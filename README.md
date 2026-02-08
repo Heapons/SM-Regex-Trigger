@@ -21,10 +21,10 @@ sm_regex_prefix "" Prefix for random name when player has become unnamed
 sm_regex_irc_enabled "0" Enable IRC relay for SourceIRC. Sends messages to flagged channels  
 ```
 ## Installation  
- * Install regexfiltering.smx into your plugins folder.  
- * Either install the included config to addons/sourcemod/configs/regexfilters/  
+ * Download the plugin from [Actions](https://github.com/Heapons/SM-Regex-Trigger/actions) 
+ * Either install the included config to addons/sourcemod/configs/regextriggers/  
   or create your own at that location.
- * Once the plugin has been loaded, it can be configured at cfg/sourcemod/plugin.regexfilters.txt  
+ * Once the plugin has been loaded, it can be configured at cfg/sourcemod/plugin.regextrigger.txt  
 
 ## Config Keys
 **Warn:** Display a warning message to the player  
