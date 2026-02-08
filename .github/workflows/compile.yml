@@ -72,18 +72,16 @@ jobs:
         run: |
           short_sha="${GITHUB_SHA::7}"
           echo "short_sha=${short_sha}" >> "$GITHUB_OUTPUT"
-          echo "zip_name=regextrigger-${short_sha}.zip" >> "$GITHUB_OUTPUT"
 
-      - name: Package artifact
+      - name: Setup artifact
         shell: bash
         run: |
           mkdir -p package/configs/regextriggers package/plugins
           cp configs/regextriggers/regextriggers.cfg package/configs/regextriggers/regextriggers.cfg
           cp plugins/regextrigger.smx package/plugins/regextrigger.smx
-          (cd package && zip -r "../${{ steps.artifact_name.outputs.zip_name }}" .)
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: regextrigger-${{ steps.artifact_name.outputs.short_sha }}
-          path: ${{ steps.artifact_name.outputs.zip_name }}
+          path: package
